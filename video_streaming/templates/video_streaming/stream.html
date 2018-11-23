@@ -1,0 +1,26 @@
+<html>
+    <body>
+        <h1> Test for simple Webcam Live streaming </h1>
+        <img src="http://127.0.0.1:8000/webcam-stream">
+        <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
+    </body>
+    <script type="text/javascript">
+            var testSocket = new WebSocket("ws://" + window.location.host + "/echo");
+
+            testSocket.onopen = function(e) {
+                console.info('Socket connected');
+            };
+
+            testSocket.onmessage = function(e) {
+                var data = JSON.parse(e.data);
+                var message = data['message'];
+                document.querySelector('#chat-log').value += (message + '\n');
+            };
+
+            testSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+                testSocket.close();
+            };
+
+        </script>
+</html>
