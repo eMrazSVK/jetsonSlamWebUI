@@ -18,7 +18,7 @@ def about(request):
 class VideoCamera(object):
     def __init__(self):
         # redis objects init
-        self.redis_obj = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis_obj = redis.Redis(host='localhost', port=6379, db=0, charset="utf-8", decode_responses=True)
         self.pubsub = self.redis_obj.pubsub(ignore_subscribe_messages=True)
         self.pubsub.subscribe('img-stream')
 
@@ -28,8 +28,13 @@ class VideoCamera(object):
     def get_frame(self):
         message = self.pubsub.get_message()
 
+
         if message is None:
             return -1
+
+        # compare strings with == operator, not is // DONT if message['data'] is 'endstream':
+        if message['data'] == 'endstream':
+            return -2
 
         nparr = np.fromstring(message['data'], np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -41,7 +46,6 @@ def gen(camera):
     while True:
         frame = camera.get_frame()
 
-
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
@@ -49,6 +53,11 @@ def gen(camera):
 def stream_from_redis(camera):
     while True:
         img = camera.get_frame()
+
+        if img is -2:
+            print('end of stream')
+            break
+
         if img is -1:
             continue
 

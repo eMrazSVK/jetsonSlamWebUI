@@ -67,6 +67,7 @@ class QRCodeStreamConsumer(WebsocketConsumer):
                     self.send(json.dumps({
                         'message': qrData
                     }))
+
         print('exiting logging')
         return
 

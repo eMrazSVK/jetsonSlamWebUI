@@ -56,8 +56,10 @@ class CodeReaderConsumer(SyncConsumer):
             data = np.array(frame)
             stringData = data.tostring()
             redis_obj.publish('img-stream', stringData)
-            time.sleep(0.05)
 
+            time.sleep(0.01)
+
+        redis_obj.publish('img-stream', 'endstream')
         vid_stream.release()
         return
 
